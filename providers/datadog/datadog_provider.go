@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 
 	datadogV1 "github.com/DataDog/datadog-api-client-go/api/v1/datadog"
 	datadogV2 "github.com/DataDog/datadog-api-client-go/api/v2/datadog"
@@ -32,6 +33,7 @@ type DatadogProvider struct { //nolint
 	apiKey          string
 	appKey          string
 	apiURL          string
+	validate        bool
 	authV1          context.Context
 	authV2          context.Context
 	datadogClientV1 *datadogV1.APIClient
@@ -40,12 +42,29 @@ type DatadogProvider struct { //nolint
 
 // Init check env params and initialize API Client
 func (p *DatadogProvider) Init(args []string) error {
+
+	if args[3] != "" {
+		validate, validateErr := strconv.ParseBool(args[3])
+		if validateErr != nil {
+			return fmt.Errorf(`invalid validate arg : %v`, validateErr)
+		}
+		p.validate = validate
+	} else if os.Getenv("DATADOG_VALIDATE") != "" {
+		validate, validateErr := strconv.ParseBool(os.Getenv("DATADOG_VALIDATE"))
+		if validateErr != nil {
+			return fmt.Errorf(`invalid DATADOG_VALIDATE env var : %v`, validateErr)
+		}
+		p.validate = validate
+	} else {
+		p.validate = true
+	}
+
 	if args[0] != "" {
 		p.apiKey = args[0]
 	} else {
 		if apiKey := os.Getenv("DATADOG_API_KEY"); apiKey != "" {
 			p.apiKey = apiKey
-		} else {
+		} else if p.validate {
 			return errors.New("api-key requirement")
 		}
 	}
@@ -55,7 +74,7 @@ func (p *DatadogProvider) Init(args []string) error {
 	} else {
 		if appKey := os.Getenv("DATADOG_APP_KEY"); appKey != "" {
 			p.appKey = appKey
-		} else {
+		} else if p.validate {
 			return errors.New("app-key requirement")
 		}
 	}
@@ -144,9 +163,10 @@ func (p *DatadogProvider) GetName() string {
 // GetConfig return map of provider config for Datadog
 func (p *DatadogProvider) GetConfig() cty.Value {
 	return cty.ObjectVal(map[string]cty.Value{
-		"api_key": cty.StringVal(p.apiKey),
-		"app_key": cty.StringVal(p.appKey),
-		"api_url": cty.StringVal(p.apiURL),
+		"api_key":  cty.StringVal(p.apiKey),
+		"app_key":  cty.StringVal(p.appKey),
+		"api_url":  cty.StringVal(p.apiURL),
+		"validate": cty.BoolVal(p.validate),
 	})
 }
 
@@ -164,6 +184,7 @@ func (p *DatadogProvider) InitService(serviceName string, verbose bool) error {
 		"api-key":         p.apiKey,
 		"app-key":         p.appKey,
 		"api-url":         p.apiURL,
+		"validate":        p.validate,
 		"authV1":          p.authV1,
 		"authV2":          p.authV2,
 		"datadogClientV1": p.datadogClientV1,
@@ -177,6 +198,7 @@ func (p *DatadogProvider) GetSupportedService() map[string]terraformutils.Servic
 	return map[string]terraformutils.ServiceGenerator{
 		"dashboard_list":                       &DashboardListGenerator{},
 		"dashboard":                            &DashboardGenerator{},
+		"dashboard_json":                       &DashboardJSONGenerator{},
 		"downtime":                             &DowntimeGenerator{},
 		"logs_archive":                         &LogsArchiveGenerator{},
 		"logs_archive_order":                   &LogsArchiveOrderGenerator{},
@@ -195,14 +217,12 @@ func (p *DatadogProvider) GetSupportedService() map[string]terraformutils.Servic
 		"integration_slack_channel":            &IntegrationSlackChannelGenerator{},
 		"metric_metadata":                      &MetricMetadataGenerator{},
 		"monitor":                              &MonitorGenerator{},
-		"screenboard":                          &ScreenboardGenerator{},
 		"security_monitoring_default_rule":     &SecurityMonitoringDefaultRuleGenerator{},
 		"security_monitoring_rule":             &SecurityMonitoringRuleGenerator{},
 		"service_level_objective":              &ServiceLevelObjectiveGenerator{},
-		"synthetics":                           &SyntheticsGenerator{},
+		"synthetics_test":                      &SyntheticsTestGenerator{},
 		"synthetics_global_variable":           &SyntheticsGlobalVariableGenerator{},
 		"synthetics_private_location":          &SyntheticsPrivateLocationGenerator{},
-		"timeboard":                            &TimeboardGenerator{},
 		"user":                                 &UserGenerator{},
 		"role":                                 &RoleGenerator{},
 	}
@@ -291,13 +311,13 @@ func (p DatadogProvider) GetResourceConnections() map[string]map[string][]string
 				"monitor_ids", "id",
 			},
 		},
-		"synthetics": {
+		"synthetics_test": {
 			"synthetics_private_location": {
 				"locations", "id",
 			},
 		},
 		"synthetics_global_variable": {
-			"synthetics": {
+			"synthetics_test": {
 				"parse_test_id", "id",
 			},
 		},

@@ -97,6 +97,11 @@ In that case terraformer will not know with which region resources are associate
     * `aws_datapipeline_pipeline`
 *   `devicefarm`
     * `aws_devicefarm_project`
+*   `docdb`
+    * `aws_docdb_cluster`
+    * `aws_docdb_cluster_instance`
+    * `aws_docdb_cluster_parameter_group`
+    * `aws_docdb_subnet_group`
 *   `dynamodb`
     * `aws_dynamodb_table`
 *   `ec2_instance`
@@ -146,6 +151,8 @@ In that case terraformer will not know with which region resources are associate
     * `glue_crawler`
     * `aws_glue_catalog_database`
     * `aws_glue_catalog_table`
+    * `aws_glue_job`
+    * `aws_glue_trigger`
 *   `iam`
     * `aws_iam_group`
     * `aws_iam_group_policy`

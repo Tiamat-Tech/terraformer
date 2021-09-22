@@ -151,7 +151,7 @@ func (p *ProviderWrapper) readObjBlocks(block map[string]*configschema.NestedBlo
 				}
 			}
 		}
-		if fieldCount == len(v.Block.Attributes) && fieldCount > 0 {
+		if fieldCount == len(v.Block.Attributes) && fieldCount > 0 && len(v.BlockTypes) == 0 {
 			readOnlyAttributes = append(readOnlyAttributes, "^"+k)
 		}
 	}
@@ -174,6 +174,7 @@ func (p *ProviderWrapper) Refresh(info *terraform.InstanceInfo, state *terraform
 			Private:    []byte{},
 		})
 		if resp.Diagnostics.HasErrors() {
+			log.Println(resp.Diagnostics.Err())
 			log.Printf("WARN: Fail read resource from provider, wait %dms before retry\n", p.retrySleepMs)
 			time.Sleep(time.Duration(p.retrySleepMs) * time.Millisecond)
 			continue

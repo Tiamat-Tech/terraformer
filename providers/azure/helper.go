@@ -106,3 +106,9 @@ func ParseAzureResourceID(id string) (*ResourceID, error) {
 
 	return idObj, nil
 }
+
+func asHereDoc(json string) string {
+	return fmt.Sprintf(`<<JSON
+%s
+JSON`, json)
+}

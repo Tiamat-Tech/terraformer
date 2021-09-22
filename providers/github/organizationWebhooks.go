@@ -21,7 +21,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/terraformer/terraformutils"
 
-	githubAPI "github.com/google/go-github/v25/github"
+	githubAPI "github.com/google/go-github/v35/github"
 )
 
 type OrganizationWebhooksGenerator struct {
@@ -40,7 +40,7 @@ func (g *OrganizationWebhooksGenerator) InitResources() error {
 
 	// List all organization hooks for the authenticated user
 	for {
-		hooks, resp, err := client.Organizations.ListHooks(ctx, g.Args["organization"].(string), opt)
+		hooks, resp, err := client.Organizations.ListHooks(ctx, g.Args["owner"].(string), opt)
 		if err != nil {
 			log.Println(err)
 			return nil

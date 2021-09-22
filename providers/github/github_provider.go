@@ -65,6 +65,8 @@ func (p *GithubProvider) Init(args []string) error {
 	if len(args) > 2 {
 		if args[2] != "" {
 			p.baseURL = args[2]
+		} else {
+			p.baseURL = githubDefaultURL
 		}
 	}
 	return nil
@@ -95,6 +97,7 @@ func (p *GithubProvider) InitService(serviceName string, verbose bool) error {
 func (p *GithubProvider) GetSupportedService() map[string]terraformutils.ServiceGenerator {
 	return map[string]terraformutils.ServiceGenerator{
 		"members":               &MembersGenerator{},
+		"organization":          &OrganizationGenerator{},
 		"organization_blocks":   &OrganizationBlockGenerator{},
 		"organization_projects": &OrganizationProjectGenerator{},
 		"organization_webhooks": &OrganizationWebhooksGenerator{},

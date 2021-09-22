@@ -41,11 +41,14 @@ A CLI tool that generates `tf`/`json` and `tfstate` files based on existing infr
         * [RabbitMQ](/docs/rabbitmq.md)
     * Network
         * [Cloudflare](/docs/cloudflare.md)
+        * [PAN-OS](/docs/panos.md)
     * VCS
         * [GitHub](/docs/github.md)
+        * [Gitlab](/docs/gitlab.md)
     * Monitoring & System Management
         * [Datadog](/docs/datadog.md)
         * [New Relic](/docs/relic.md)
+        * [PagerDuty](/docs/pagerduty.md)
     * Community
         * [Keycloak](/docs/keycloak.md)
         * [Logz.io](/docs/logz.md)
@@ -54,6 +57,9 @@ A CLI tool that generates `tf`/`json` and `tfstate` files based on existing infr
         * [Xen Orchestra](/docs/xen.md)
         * [GmailFilter](/docs/gmailfilter.md)
         * [Grafana](/docs/grafana.md)
+        * [Vault](/docs/vault.md)
+    * Identity
+        * [Okta](/docs/okta.md)
 - [Contributing](#contributing)
 - [Developing](#developing)
 - [Infrastructure](#infrastructure)
@@ -118,9 +124,9 @@ To import resources from all services, use `--resources="*"` . If you want to ex
 
 Filters are a way to choose which resources `terraformer` imports. It's possible to filter resources by its identifiers or attributes. Multiple filtering values are separated by `:`. If an identifier contains this symbol, value should be wrapped in `'` e.g. `--filter=resource=id1:'project:dataset_id'`. Identifier based filters will be executed before Terraformer will try to refresh remote state.
 
-Use `Type` when you need to filter only one of several types of resources. Multiple filters can be combined when importing different resource types. An example would be importing all AWS security groups from a specific AWS VPC: 
+Use `Type` when you need to filter only one of several types of resources. Multiple filters can be combined when importing different resource types. An example would be importing all AWS security groups from a specific AWS VPC:
 ```
-terraformer import aws -r sg,vpc --filter Type=sg;Name=vpc_id;Value=VPC_ID --filter Type=vpc;Name=id;Value=VPC_ID 
+terraformer import aws -r sg,vpc --filter Type=sg;Name=vpc_id;Value=VPC_ID --filter Type=vpc;Name=id;Value=VPC_ID
 ```
 Notice how the `Name` is different for `sg` than it is for `vpc`.
 
@@ -193,10 +199,10 @@ It's possible to combine `--compact` `--path-pattern` parameters together.
 ### Installation
 
 From source:
-1.  Run `git clone <terraformer repo>`
+1.  Run `git clone <terraformer repo> && cd terraformer/`
 2.  Run `go mod download`
 3.  Run `go build -v` for all providers OR build with one provider `go run build/main.go {google,aws,azure,kubernetes and etc}`
-4.  Run ```terraform init``` against an ```versions.tf``` file to install the plugins required for your platform. For example, if you need plugins for the google provider, ```versions.tf``` should contain:
+4.  Run ```terraform init``` against a ```versions.tf``` file to install the plugins required for your platform. For example, if you need plugins for the google provider, ```versions.tf``` should contain:
 
 ```
 terraform {
@@ -248,10 +254,8 @@ Links to download Terraform Providers:
     * Alicloud provider >1.57.1 - [here](https://releases.hashicorp.com/terraform-provider-alicloud/)
 * Cloud
     * DigitalOcean provider >1.9.1 - [here](https://releases.hashicorp.com/terraform-provider-digitalocean/)
-    * Fastly provider >0.16.1 - [here](https://releases.hashicorp.com/terraform-provider-fastly/)
     * Heroku provider >2.2.1 - [here](https://releases.hashicorp.com/terraform-provider-heroku/)
     * Linode provider >1.8.0 - [here](https://releases.hashicorp.com/terraform-provider-linode/)
-    * NS1 provider >1.8.3 - [here](https://releases.hashicorp.com/terraform-provider-ns1/)
     * OpenStack provider >1.21.1 - [here](https://releases.hashicorp.com/terraform-provider-openstack/)
     * TencentCloud provider >1.50.0 - [here](https://releases.hashicorp.com/terraform-provider-tencentcloud/)
     * Vultr provider >1.0.5 - [here](https://releases.hashicorp.com/terraform-provider-vultr/)
@@ -261,11 +265,15 @@ Links to download Terraform Providers:
     * RabbitMQ provider >=1.1.0 - [here](https://releases.hashicorp.com/terraform-provider-rabbitmq/)
 * Network
     * Cloudflare provider >1.16 - [here](https://releases.hashicorp.com/terraform-provider-cloudflare/)
+    * Fastly provider >0.16.1 - [here](https://releases.hashicorp.com/terraform-provider-fastly/)
+    * NS1 provider >1.8.3 - [here](https://releases.hashicorp.com/terraform-provider-ns1/)
+    * PAN-OS provider >= 1.8.3 - [here](https://github.com/PaloAltoNetworks/terraform-provider-panos)
 * VCS
     * GitHub provider >=2.2.1 - [here](https://releases.hashicorp.com/terraform-provider-github/)
 * Monitoring & System Management
     * Datadog provider >2.1.0 - [here](https://releases.hashicorp.com/terraform-provider-datadog/)
     * New Relic provider >2.0.0 - [here](https://releases.hashicorp.com/terraform-provider-newrelic/)
+    * Pagerduty >=1.9 - [here](https://releases.hashicorp.com/terraform-provider-pagerduty/)
 * Community
     * Keycloak provider >=1.19.0 - [here](https://github.com/mrparkers/terraform-provider-keycloak/)
     * Logz.io provider >=1.1.1 - [here](https://github.com/jonboydell/logzio_terraform_provider/)
@@ -273,6 +281,7 @@ Links to download Terraform Providers:
     * Mikrotik provider >= 0.2.2 - [here](https://github.com/ddelnano/terraform-provider-mikrotik)
     * Xen Orchestra provider >= 0.18.0 - [here](https://github.com/ddelnano/terraform-provider-xenorchestra)
     * GmailFilter provider >= 1.0.1 - [here](https://github.com/yamamoto-febc/terraform-provider-gmailfilter)
+    * Vault provider - [here](https://github.com/hashicorp/terraform-provider-vault)
 
 Information on provider plugins:
 https://www.terraform.io/docs/configuration/providers.html

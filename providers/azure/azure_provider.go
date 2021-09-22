@@ -157,11 +157,35 @@ func (AzureProvider) GetResourceConnections() map[string]map[string][]string {
 		"database": {
 			"resource_group": []string{"resource_group_name", "name"},
 		},
+		"databricks": {
+			"resource_group": []string{
+				"resource_group_name", "name",
+				"managed_resource_group_name", "name",
+			},
+			"storage_account": []string{"storage_account_name", "name"},
+			"subnet": []string{
+				"public_subnet_name", "name",
+				"private_subnet_name", "name",
+			},
+			"virtual_network": []string{"virtual_network_id", "id"},
+		},
+		"data_factory": {
+			"resource_group": []string{"resource_group_name", "name"},
+			"data_factory":   []string{"data_factory_name", "name"},
+			"keyvault":       []string{"keyvault_id", "id"},
+		},
 		"disk": {
 			"resource_group": []string{"resource_group_name", "name"},
 		},
 		"dns": {
 			"resource_group": []string{"resource_group_name", "name"},
+		},
+		"eventhub": {
+			"resource_group": []string{"resource_group_name", "name"},
+			"eventhub": []string{
+				"eventhub_name", "name",
+				"namespace_name", "name",
+			},
 		},
 		"keyvault": {
 			"resource_group": []string{"resource_group_name", "name"},
@@ -171,14 +195,23 @@ func (AzureProvider) GetResourceConnections() map[string]map[string][]string {
 		},
 		"network_interface": {
 			"resource_group": []string{"resource_group_name", "name"},
+			"subnet":         []string{"subnet_id", "id"},
 		},
 		"network_security_group": {
 			"resource_group": []string{"resource_group_name", "name"},
 		},
 		"private_dns": {
+			"resource_group":  []string{"resource_group_name", "name"},
+			"virtual_network": []string{"virtual_network_id", "id"},
+		},
+		"private_endpoint": {
 			"resource_group": []string{"resource_group_name", "name"},
+			"subnet":         []string{"subnet_id", "id"},
 		},
 		"public_ip": {
+			"resource_group": []string{"resource_group_name", "name"},
+		},
+		"purview": {
 			"resource_group": []string{"resource_group_name", "name"},
 		},
 		"redis": {
@@ -188,7 +221,8 @@ func (AzureProvider) GetResourceConnections() map[string]map[string][]string {
 			"resource_group": []string{"resource_group_name", "name"},
 		},
 		"storage_account": {
-			"resource_group": []string{"resource_group_name", "name"},
+			"resource_group":  []string{"resource_group_name", "name"},
+			"virtual_network": []string{"virtual_network_subnet_ids", "id"},
 		},
 		"storage_blob": {
 			"storage_account":   []string{"storage_account_name", "name"},
@@ -197,8 +231,22 @@ func (AzureProvider) GetResourceConnections() map[string]map[string][]string {
 		"storage_container": {
 			"storage_account": []string{"storage_account_name", "name"},
 		},
+		"synapse": {
+			"resource_group": []string{
+				"resource_group_name", "name",
+				"managed_resource_group_name", "name",
+			},
+			"synapse": []string{"synapse_workspace_id", "id"},
+		},
+		"subnet": {
+			"resource_group":         []string{"resource_group_name", "name"},
+			"virtual_network":        []string{"virtual_network_name", "name"},
+			"network_security_group": []string{"network_security_group_id", "id"},
+			"subnet":                 []string{"subnet_id", "id"},
+		},
 		"virtual_machine": {
-			"resource_group": []string{"resource_group_name", "name"},
+			"resource_group":    []string{"resource_group_name", "name"},
+			"network_interface": []string{"network_interface_ids", "id"},
 		},
 		"virtual_network": {
 			"resource_group": []string{"resource_group_name", "name"},
@@ -213,14 +261,19 @@ func (p *AzureProvider) GetSupportedService() map[string]terraformutils.ServiceG
 		"cosmosdb":                             &CosmosDBGenerator{},
 		"container":                            &ContainerGenerator{},
 		"database":                             &DatabasesGenerator{},
+		"databricks":                           &DatabricksGenerator{},
+		"data_factory":                         &DataFactoryGenerator{},
 		"disk":                                 &DiskGenerator{},
 		"dns":                                  &DNSGenerator{},
+		"eventhub":                             &EventHubGenerator{},
 		"keyvault":                             &KeyVaultGenerator{},
 		"load_balancer":                        &LoadBalancerGenerator{},
 		"network_interface":                    &NetworkInterfaceGenerator{},
 		"network_security_group":               &NetworkSecurityGroupGenerator{},
 		"private_dns":                          &PrivateDNSGenerator{},
+		"private_endpoint":                     &PrivateEndpointGenerator{},
 		"public_ip":                            &PublicIPGenerator{},
+		"purview":                              &PurviewGenerator{},
 		"redis":                                &RedisGenerator{},
 		"resource_group":                       &ResourceGroupGenerator{},
 		"scaleset":                             &ScaleSetGenerator{},
@@ -229,6 +282,8 @@ func (p *AzureProvider) GetSupportedService() map[string]terraformutils.ServiceG
 		"storage_account":                      &StorageAccountGenerator{},
 		"storage_blob":                         &StorageBlobGenerator{},
 		"storage_container":                    &StorageContainerGenerator{},
+		"synapse":                              &SynapseGenerator{},
+		"subnet":                               &SubnetGenerator{},
 		"virtual_machine":                      &VirtualMachineGenerator{},
 		"virtual_network":                      &VirtualNetworkGenerator{},
 	}
@@ -249,4 +304,33 @@ func (p *AzureProvider) InitService(serviceName string, verbose bool) error {
 		"resource_group": p.resourceGroup,
 	})
 	return nil
+}
+
+func (p *AzureService) getClientArgs() (subscriptionID string, resourceGroup string, authorizer autorest.Authorizer) {
+	subs := p.Args["config"].(authentication.Config).SubscriptionID
+	auth := p.Args["authorizer"].(autorest.Authorizer)
+	resg := p.Args["resource_group"].(string)
+	return subs, resg, auth
+}
+
+func (p *AzureService) AppendSimpleResource(id string, resourceName string, resourceType string) {
+	newResource := terraformutils.NewSimpleResource(id, resourceName, resourceType, p.ProviderName, []string{})
+	p.Resources = append(p.Resources, newResource)
+}
+
+func (p *AzureService) appendSimpleAssociation(id string, linkedResourceName string, resourceName *string, resourceType string, attributes map[string]string) {
+	var resourceName2 string
+	if resourceName != nil {
+		resourceName2 = *resourceName
+	} else {
+		resourceName0 := strings.ReplaceAll(resourceType, "azurerm_", "")
+		resourceName1 := resourceName0[strings.IndexByte(resourceName0, '_'):]
+		resourceName2 = linkedResourceName + resourceName1
+	}
+	newResource := terraformutils.NewResource(
+		id, resourceName2, resourceType, p.ProviderName, attributes,
+		[]string{"name"},
+		map[string]interface{}{},
+	)
+	p.Resources = append(p.Resources, newResource)
 }

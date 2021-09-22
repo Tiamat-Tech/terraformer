@@ -3,14 +3,16 @@
 Example:
 
 ```
- ./terraformer import datadog --resources=monitor --api-key=YOUR_DATADOG_API_KEY // or DATADOG_API_KEY in env --app-key=YOUR_DATADOG_APP_KEY // or DATADOG_APP_KEY in env --api-url=DATADOG_API_URL // or DATADOG_HOST in env
- ./terraformer import datadog --resources=monitor --filter=monitor=id1:id2:id4 --api-key=YOUR_DATADOG_API_KEY // or DATADOG_API_KEY in env --app-key=YOUR_DATADOG_APP_KEY // or DATADOG_APP_KEY in env
+ ./terraformer import datadog --resources=monitor --api-key=YOUR_DATADOG_API_KEY // or DATADOG_API_KEY in env --app-key=YOUR_DATADOG_APP_KEY // or DATADOG_APP_KEY in env --api-url=DATADOG_API_URL // or DATADOG_HOST in env --validate=VALIDATE_BOOL // or DATADOG_VALIDATE in env
+ ./terraformer import datadog --resources=monitor --filter=monitor=id1:id2:id4 --api-key=YOUR_DATADOG_API_KEY // or DATADOG_API_KEY in env --app-key=YOUR_DATADOG_APP_KEY // or DATADOG_APP_KEY in env --validate=VALIDATE_BOOL // or DATADOG_VALIDATE in env
 ```
 
 List of supported Datadog services:
 
 *   `dashboard`
     * `datadog_dashboard`
+*   `dashboard_json`
+    * `datadog_dashboard_json`
 *   `dashboard_list`
     * `datadog_dashboard_list`
 *   `downtime`
@@ -63,7 +65,7 @@ List of supported Datadog services:
     * `datadog_security_monitoring_rule`
 *   `service_level_objective`
     * `datadog_service_level_objective`
-*   `synthetics`
+*   `synthetics_test`
     * `datadog_synthetics_test`
 *   `synthetics_global_variables`
     * `datadog_synthetics_global_variables`
